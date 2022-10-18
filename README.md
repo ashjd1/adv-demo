@@ -1,1 +1,1 @@
-# Demo fro advance training
+# Demo for advance training
