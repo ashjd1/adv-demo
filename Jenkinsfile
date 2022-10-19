@@ -3,51 +3,50 @@ pipeline
     agent any
     stages
     {
-        stage('Build Docker Image')
+        stage('Build Dockerfile')
         {
            steps
-           {
-                script
-                {
-                    sh 'docker build -t ashjd/ashu-jenkins1 .'
-                }
-            }
+           {              
+                sh 'docker build -t gcc .'
+           }
         }
-        stage('docker login')
+        stage('Run container')
         {
             steps
-            {   
-                sh "docker login -u ashjd -p dckr_pat_Bd34xMJ2z1I24rgENk3kqOV3mDo"         
+            {
+                sh 'docker run gcc'
             }
         }
-        stage('Push image to Hub')
+        stage('Giving tag')
+        {
+            steps
+            {
+                sh 'docker tag gcc ashjd/ashu-jenkins1:gcc'
+            }
+        }
+        stage('Docker login')
+        {
+            steps
+            {
+                withCredentials([usernamePassword(credentialsId: 'docker-login', usernameVariable: 'ashUSR', passwordVariable: 'ashPSW')]) 
+                {
+                    sh 'echo ${ashPSW} | docker login -u ${ashUSR} --password-stdin'
+
+                }
+            }   
+        }
+        stage('Push image to DockerHub')
         {
             steps
             {     
-                sh 'docker push ashjd/ashu-jenkins1'
+                sh 'docker push ashjd/ashu-jenkins1:gcc'
             }          
         }
-        stage('Pull image from hub')
+        stage('Pull image from DockerHub')
         {
             steps
-            {
-                script
-                {
-     
-                    sh 'docker pull ashjd/ashu-jenkins1'
-                }
-            }
-        }
-        
-        stage('start container')
-        {
-            steps
-            {
-                script
-                {
-                   sh 'docker run -p 8082:80 --name jenkins1 ashjd/ashu-jenkins1'
-                    sh 'docker rm jenkins1'
-                }
+            {     
+                sh 'docker pull ashjd/ashu-jenkins1:gcc'
             }
         }
     }
